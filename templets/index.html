@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Translation and Summarization</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/universal-sentence-encoder"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Text Translation and Summarization</h1>
+    <input type="file" id="fileInput">
+    <hr>
+    <h2>Chosen File Text</h2>
+    <div id="chosenText"></div>
+    <hr>
+    <h2>Translated Text</h2>
+    <div id="translatedText"></div>
+    <hr>
+    <h2>Summary</h2>
+    <div id="summary"></div>
+    <div id="loadingIndicator" style="display: none;">Loading...</div>
+
+    <script>
+        async function translateAndSummarize(fileInput) {
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+            reader.onload = async function(event) {
+                const text = event.target.result;
+
+                // Display chosen file text
+                document.getElementById("chosenText").innerText = text;
+
+                // Show loading indicator
+                document.getElementById("loadingIndicator").style.display = "block";
+
+                // Send file data to server
+                const formData = new FormData();
+                formData.append('file', file);
+
+                const response = await fetch('/', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById("translatedText").innerText = data.english;
+                    document.getElementById("summary").innerText = data.summary;
+                } else {
+                    alert('Failed to process file');
+                }
+
+                // Hide loading indicator
+                document.getElementById("loadingIndicator").style.display = "none";
+            };
+            reader.readAsText(file);
+        }
+
+        $(document).ready(function() {
+            $('#fileInput').change(function() {
+                translateAndSummarize(this);
+            });
+        });
+    </script>
+</body>
+</html>
